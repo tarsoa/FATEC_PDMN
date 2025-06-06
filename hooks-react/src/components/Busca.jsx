@@ -2,6 +2,7 @@
 import axios from 'axios'
 import striptags from 'striptags'
 import React, { use, useEffect, useState } from 'react'
+import { Button } from 'primereact/button'
 import { IconField } from 'primereact/iconfield'
 import { InputIcon } from 'primereact/inputicon'
 import { InputText } from 'primereact/inputtext'
@@ -23,8 +24,19 @@ const Busca = () => {
       //corrigir, alterando aquilo que está sendo atribuído à variável resultados,
       //conforme a estrutura da resposta devolvido pela wikipedia
       setResultados(data.query.search)
-    }    
-    fazerBusca() 
+    }
+    if(termoDeBusca && ! resultados.length === 0){
+      fazerBusca
+    }
+    else{
+      const timeoutID = setTimeout(() => {
+        if(termoDeBusca)
+           fazerBusca() 
+      }, 1000)
+      return () => {
+        clearTimeout(timeoutID)
+      }
+    }
   }, [termoDeBusca])
    
   return (
@@ -38,17 +50,26 @@ const Busca = () => {
       </IconField>
       {/* para cada item, produzir um p que exibe seu snippet */}
       {
-        resultados.map((item) => (
+        resultados.map((resultado) => (
           <div
-          key={item.pageid}
+          key={resultado.pageid}
           className='my-2 border border-1 border-400'>
             <div
                 className='border-bottom border-1 border-400 p-2 
                 text-center font-bold'>
-                    {item.title}
+                    {resultado.title}
+                    <span>
+                      <Button 
+                        icon="pi pi-send "
+                        className='ml-3 p-button-rounded p-button-secondary'
+                        onClick={() => {
+                          window.open(`https://en.wikipedia.org/?curid=${resultado.pageid}`)
+                        }}/>
+                     </span>
             </div>
             <div className='p-2'>
-                <span dangerouslySetInnerHTML={{__html: item.snippet}}></span>
+                {/*striptags(resultado.snippet)*/}
+                <span dangerouslySetInnerHTML={{__html: resultado.snippet}}></span>
             </div>         
            </div>
         ))
