@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Logs
 logs
 *.log
@@ -22,3 +23,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+=======
+FATEC_PDMN/
+>>>>>>> 073d838367d7680efe0e830ddb0284d537b620e0
