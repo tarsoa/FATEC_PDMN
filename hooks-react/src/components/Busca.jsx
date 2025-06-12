@@ -1,81 +1,84 @@
 // rafce
-import axios from 'axios'
-import striptags from 'striptags'
-import React, { use, useEffect, useState } from 'react'
-import { Button } from 'primereact/button'
-import { IconField } from 'primereact/iconfield'
-import { InputIcon } from 'primereact/inputicon'
-import { InputText } from 'primereact/inputtext'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { IconField } from 'primereact/iconfield';
+import { InputText } from 'primereact/inputtext';
+
 const Busca = () => {
-  const [termoDeBusca, setTermoDeBusca] = useState('')
-  const [resultados, setResultados] = useState([])
+const [termo, setTermo] = useState('São Paulo');
+const [resultados, setResultados] = useState([]);
+const [timeoutId, setTimeoutId] = useState(null);
+
+const apiKey = '507157d5122fb8d1e388d1e29962f8ba';
 
   useEffect(() => {
-    const fazerBusca = async () => {
-      const { data } = await axios.get('https://en.wikipedia.org/w/api.php', {
-        params: {
-            action: 'query',
-            list: 'search',
-            format: 'json',
-            origin: '*',
-            srsearch: termoDeBusca            
-        }
-      })
-      //corrigir, alterando aquilo que está sendo atribuído à variável resultados,
-      //conforme a estrutura da resposta devolvido pela wikipedia
-      setResultados(data.query.search)
-    }
-    if(termoDeBusca && ! resultados.length === 0){
-      fazerBusca
-    }
-    else{
-      const timeoutID = setTimeout(() => {
-        if(termoDeBusca)
-           fazerBusca() 
-      }, 1000)
-      return () => {
-        clearTimeout(timeoutID)
+    if (termo.length >= 3) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
-    }
-  }, [termoDeBusca])
-   
-  return (
-    <div>
-      <IconField iconPosition='left'>
-        <InputIcon className='pi pi-search' />       
-        <InputText 
-            placeholder='Buscar...'
-            onChange={(e) => {setTermoDeBusca(e.target.value)}} 
-            value={termoDeBusca} />
-      </IconField>
-      {/* para cada item, produzir um p que exibe seu snippet */}
-      {
-        resultados.map((resultado) => (
-          <div
-          key={resultado.pageid}
-          className='my-2 border border-1 border-400'>
-            <div
-                className='border-bottom border-1 border-400 p-2 
-                text-center font-bold'>
-                    {resultado.title}
-                    <span>
-                      <Button 
-                        icon="pi pi-send "
-                        className='ml-3 p-button-rounded p-button-secondary'
-                        onClick={() => {
-                          window.open(`https://en.wikipedia.org/?curid=${resultado.pageid}`)
-                        }}/>
-                     </span>
-            </div>
-            <div className='p-2'>
-                {/*striptags(resultado.snippet)*/}
-                <span dangerouslySetInnerHTML={{__html: resultado.snippet}}></span>
-            </div>         
-           </div>
-        ))
-     }
-</div>
-)
-}
 
-export default Busca
+      const id = setTimeout(() => {
+        fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${termo}&appid=${apiKey}&units=metric&lang=pt_br`)
+          .then(res => res.json())
+          .then(data => setResultados(data.list));
+      }, 2000);
+
+      setTimeoutId(id);
+
+      return () => clearTimeout(id);
+    }
+  }, [termo]);
+
+  return (
+    <div style={{ padding: '1rem' }}>
+      <label htmlFor="cidade">Digite o nome da cidade:</label><br />
+      <input
+        id="cidade"
+        type="text"
+        value={termo}
+        onChange={(e) => setTermo(e.target.value)}
+        placeholder="Ex: São Paulo"
+        style={{ width: '300px', padding: '8px', marginTop: '4px' }}
+      />
+
+      <h3 style={{ marginTop: '1.5rem' }}>Previsão para {termo}</h3>
+
+      {resultados.map((item, index) => {
+        const dataHora = new Date(item.dt * 1000);
+        const data = dataHora.toLocaleDateString('pt-BR');
+        const hora = dataHora.toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+
+        const { temp_min, temp_max, humidity } = item.main;
+        const { description, icon } = item.weather[0];
+
+        return (
+          <div
+            key={index}
+            style={{
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              padding: '10px',
+              marginBottom: '10px',
+              maxWidth: '350px'
+            }}
+          >
+            <p><strong>Data:</strong> {data} - {hora}</p>
+            <p><strong>Temp. mínima:</strong> {temp_min}°C</p>
+            <p><strong>Temp. máxima:</strong> {temp_max}°C</p>
+            <p><strong>Umidade:</strong> {humidity}%</p>
+            <p><strong>Descrição:</strong> {description}</p>
+            <img
+              src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+              alt={description}
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+export default Busca;
