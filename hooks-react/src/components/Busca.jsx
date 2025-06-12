@@ -1,84 +1,74 @@
-// rafce
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { IconField } from 'primereact/iconfield';
-import { InputText } from 'primereact/inputtext';
+import React, {useEffect, useState } from 'react'
+import { IconField } from 'primereact/iconfield'
+import { InputIcon } from 'primereact/inputicon'
+import { InputText } from 'primereact/inputtext'
+import axios from 'axios'
+import striptags from 'striptags'
 
 const Busca = () => {
-const [termo, setTermo] = useState('São Paulo');
-const [resultados, setResultados] = useState([]);
-const [timeoutId, setTimeoutId] = useState(null);
+    const [termoDeBusca, setTermoDeBusca] = useState('')
+    const [resultados, setResultados] = useState([])
+    
+    // useEffect(() => {
+        
+    //     console.log ('Executando todas as vezes')
 
-const apiKey = '507157d5122fb8d1e388d1e29962f8ba';
+    // })
 
-  useEffect(() => {
-    if (termo.length >= 3) {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+    // useEffect(() => {
 
-      const id = setTimeout(() => {
-        fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${termo}&appid=${apiKey}&units=metric&lang=pt_br`)
-          .then(res => res.json())
-          .then(data => setResultados(data.list));
-      }, 2000);
+    //     console.log ('Executando apenas uma vez')
 
-      setTimeoutId(id);
+    // }, [])
 
-      return () => clearTimeout(id);
-    }
-  }, [termo]);
+    useEffect (() => {
+        
 
-  return (
-    <div style={{ padding: '1rem' }}>
-      <label htmlFor="cidade">Digite o nome da cidade:</label><br />
-      <input
-        id="cidade"
-        type="text"
-        value={termo}
-        onChange={(e) => setTermo(e.target.value)}
-        placeholder="Ex: São Paulo"
-        style={{ width: '300px', padding: '8px', marginTop: '4px' }}
-      />
+        const fazerBusca = async () => {
 
-      <h3 style={{ marginTop: '1.5rem' }}>Previsão para {termo}</h3>
+            const { data } = await axios.get('https://en.wikipedia.org/w/api.php', {
+                params: {
+                    action: 'query',
+                    list: 'search',
+                    format: 'json',
+                    origin: '*',
+                    srsearch: termoDeBusca
+                }
+            })
+            setResultados(data.query.search)
+        }
 
-      {resultados.map((item, index) => {
-        const dataHora = new Date(item.dt * 1000);
-        const data = dataHora.toLocaleDateString('pt-BR');
-        const hora = dataHora.toLocaleTimeString('pt-BR', {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+        fazerBusca()
 
-        const { temp_min, temp_max, humidity } = item.main;
-        const { description, icon } = item.weather[0];
+    }, [termoDeBusca])
 
-        return (
-          <div
-            key={index}
-            style={{
-              border: '1px solid #ccc',
-              borderRadius: '8px',
-              padding: '10px',
-              marginBottom: '10px',
-              maxWidth: '350px'
-            }}
-          >
-            <p><strong>Data:</strong> {data} - {hora}</p>
-            <p><strong>Temp. mínima:</strong> {temp_min}°C</p>
-            <p><strong>Temp. máxima:</strong> {temp_max}°C</p>
-            <p><strong>Umidade:</strong> {humidity}%</p>
-            <p><strong>Descrição:</strong> {description}</p>
-            <img
-              src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
-              alt={description}
-            />
-          </div>
-        );
-      })}
+    return (
+
+    <div>
+        <IconField iconPosition='left'>
+        <InputIcon className='pi pi-search'/>
+        <InputText 
+        placeholder='Buscar...'
+        onChange={(e) => {setTermoDeBusca(e.target.value)}}
+        value={termoDeBusca} />
+        </IconField> 
+
+        { resultados.map((index) => (
+            <div key={index.pageid} className='my-2 border border-1 border-400'>
+                <div className='border-bottom border border-1 border-400 p-2 text-center font-bold'>
+                    {index.title}
+                </div>
+                <div className='p-2'>
+                    <span dangerouslySetInnerHTML={{__html: index.snippet}}></span>
+                    {/* {striptags(index.snippet)} */}
+                </div>
+            </div>
+        ))
+        }
+
+        
     </div>
-  );
-};
+    )
+}
 
-export default Busca;
+export default Busca
