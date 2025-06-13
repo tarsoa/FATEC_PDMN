@@ -21,7 +21,6 @@ app.get('/weather', async (req, res) => {
   })
 
   const forecasts = response.data.list.map(item => ({
-        datetime: item.dt_txt,
         temp_min: item.main.temp_min,
         temp_max: item.main.temp_max,
         humidity: item.main.humidity,
