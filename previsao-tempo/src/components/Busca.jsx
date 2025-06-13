@@ -1,4 +1,5 @@
 // rafce   	
+import Previsao from './Previsao';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { IconField } from 'primereact/iconfield';
@@ -52,19 +53,14 @@ const Busca = ({ onBuscaRealizada }) => {
         <div className="mt-3 border-1 border-solid border-gray-400 p-3 border-round">
           <h3 className="mb-3 text-center">Previsão para {termoDeBusca}</h3>
           {previsoes.map((item, index) => (
-            <div
-              key={index}
-              className="border-1 border-solid border-gray-300 p-3 border-round mb-3">          
-              <p> Temperatura mínima: {item.temp_min}°C</p>
-              <p> Temperatura máxima: {item.temp_max}°C</p>
-              <p> Umidade relativa do ar: {item.humidity}%</p>
-              <p> Descrição: {striptags(item.description)}</p>
-              <img
-                src={`https://openweathermap.org/img/wn/${item.icon}@2x.png`}
-                alt="Ícone do clima"
-                />  
-            </div> 
-          ))}                 
+            <Previsao
+                temp_min={item.temp_min}
+                temp_max={item.temp_max}
+                umidade={item.humidity}
+                descricao={striptags(item.description)}
+                icone={item.icon}
+              />
+            ))}                 
           </div>    
         )}
       </div>
